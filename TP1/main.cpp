@@ -1,6 +1,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <glimac/Program.hpp>
+#include <glimac/FilePath.hpp>
 
 int window_width  = 1280;
 int window_height = 720;
@@ -27,7 +29,7 @@ static void size_callback(GLFWwindow* /*window*/, int width, int height)
     window_height = height;
 }
 
-int main()
+int main([[maybe_unused]]int argc, char* argv[])
 {
     /* Initialize the library */
     if (!glfwInit()) {
@@ -64,6 +66,10 @@ int main()
     glfwSetWindowSizeCallback(window, &size_callback);
 
     /*Here should come the initialization code, trucs avant la boucle while (création des meshs...)*/
+    
+    glimac::FilePath applicationPath(argv[0]);
+    glimac::Program program = glimac::loadProgram(applicationPath.dirPath() + "TP1/shaders/triangle.vs.glsl", applicationPath.dirPath() + "TP1/shaders/triangle.fs.glsl");
+    program.use();
 
     //Création d'un VBO
     GLuint vbo;
@@ -79,12 +85,16 @@ int main()
     // On peut à présent modifier le VBO en passant par la cible GL_ARRAY_BUFFER
 
     //Remplir le vbo
-    GLfloat vertices[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.0f, 0.5f };
+    GLfloat vertices[] = { -0.5f, -0.5f, 1.f, 0.f, 0.f, // premier sommet
+    0.5f, -0.5f, 0.f, 1.f, 0.f, // deuxième sommet
+    0.0f, 0.5f, 0.f, 0.f, 1.f // troisième sommet
+    };//On ajoute la couleur à la fin des coordonnées de chaque sommet
     //envoie des données
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 15*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
     //1e argument : la cible sur laquelle le buffer est bindé (GL_ARRAY_BUFFER dans notre cas)
     //2e argument : le pointeur vers les données (notre tableau de flottants)
     //3e argument : un flag indiquant à OpenGL quel usage on va faire du buffer. On utilise GL_STATIC_DRAW pour un buffer dont les données ne changeront jamais.
+    //On debind le vbo
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //Création d'un VAO
@@ -95,21 +105,40 @@ int main()
     glBindVertexArray(vao);
 
     //Utilisation d'un attribut
-    const GLuint VERTEX_ATTR_POSITION = 0;
+    const GLuint VERTEX_ATTR_POSITION = 3;
+    const GLuint VERTEX_ATTR_COLOR =8;
     glEnableVertexAttribArray(VERTEX_ATTR_POSITION);
+    glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
     //Le 0 correspond a l'attribut du sommet identifiant la position
     //1e argument : l'index de l'attribut à activer
 
+    //On bind le VBO
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+
     //indication à OpenGL où il va trouver les sommets à dessiner, et comment lire les informations associé à chaque sommet.
-    glVertexAttribPointer(0,2, GL_FLOAT, );
+    glVertexAttribPointer(VERTEX_ATTR_POSITION,2, GL_FLOAT,GL_FALSE, 5 * sizeof(GLfloat),0);
+    glVertexAttribPointer(VERTEX_ATTR_COLOR,3, GL_FLOAT,GL_FALSE, 5 * sizeof(GLfloat),(void*) (2 * sizeof(GLfloat)));
+
+    //On débind le vbo
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //On débind le vao
+    glBindVertexArray(0);
 
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         glClearColor(1.f, 0.5f, 0.5f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);//Le code de dessin est répété à chaque tour de la boucle d'application. Il faut donc d'abord nettoyer la fenêtre afin de ne pas avoir de résidu du tour précédent.
+        
 
         /*Code de rendu ici*/
+        
+
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES,0,3);
+        glBindVertexArray(0);
 
         /* Swap front and back buffers (envoyer le buffer sur l'écran)*/
         glfwSwapBuffers(window);
@@ -117,6 +146,10 @@ int main()
         glfwPollEvents();
     }
 
+
+    
     glfwTerminate();
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
     return 0;
 }
