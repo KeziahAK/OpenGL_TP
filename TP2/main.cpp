@@ -897,13 +897,25 @@ int main([[maybe_unused]]int argc, char* argv[])
 
      /*Here should come the initialization code, trucs avant la boucle while (création des meshs...)*/
     
-    glimac::loadImage("/Users/keziahapaloo-kingslove/Documents/IMAC/Semestre_4/OpenGL_TP/GLImac-Template/assets/textures");
+    std::unique_ptr<glimac::Image> Texture = glimac::loadImage("/Users/keziahapaloo-kingslove/Documents/IMAC/Semestre_4/OpenGL_TP/GLImac-Template/assets/textures/triforce.png");
+
+    GLuint txt;
+    glGenTextures(1,&txt);
+
+    glBindTexture(GL_TEXTURE_2D,txt);
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA, Texture->getWidth(),Texture->getHeight(),0,GL_RGBA,GL_FLOAT,Texture->getPixels());
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D,0);
 
     glimac::FilePath applicationPath(argv[0]);
     glimac::Program program = glimac::loadProgram(applicationPath.dirPath() + "TP2/shaders/tex2D.vs.glsl", applicationPath.dirPath() + "TP2/shaders/tex2D.fs.glsl");
     program.use();
 
-
+    GLuint u_txt = glGetUniformLocation(program.getGLId(),"uTexture");
     GLuint u_loc = glGetUniformLocation(program.getGLId(),"uModelMatrix");
     GLuint u_color = glGetUniformLocation(program.getGLId(),"uColor");
     //float tournicoti=45;
@@ -932,9 +944,9 @@ int main([[maybe_unused]]int argc, char* argv[])
     // };
 
     Vertex2DUV vertices[] = { 
-        Vertex2DUV(glm::vec2(-0.5, -0.5),glm::vec2(0, 0)),
-        Vertex2DUV(glm::vec2(0.5, -0.5),glm::vec2(0, 0)),
-        Vertex2DUV(glm::vec2(0, 0.5),glm::vec2(0, 0))
+        Vertex2DUV(glm::vec2(-0.5, -0.5),glm::vec2(0., 1.)),
+        Vertex2DUV(glm::vec2(0.5, -0.5),glm::vec2(1., 1.)),
+        Vertex2DUV(glm::vec2(0, 0.5),glm::vec2(0.5, 0))
         
     };
 
@@ -988,7 +1000,9 @@ int main([[maybe_unused]]int argc, char* argv[])
         glm::mat3 S = scale(0.25, 0.25);
 
         glBindVertexArray(vao);
+        glBindTexture(GL_TEXTURE_2D,txt);
         //glUniform1f(u_loc,tournicoti);
+        glUniform1i(u_txt,0);
         glUniform3f(u_color,0,1,0);
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T1*S*R1));
         //tournicoti +=.1;    
@@ -1006,6 +1020,7 @@ int main([[maybe_unused]]int argc, char* argv[])
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T4*S*R2));
         glDrawArrays(GL_TRIANGLES,0,3);
         //glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D,0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -1017,5 +1032,6 @@ int main([[maybe_unused]]int argc, char* argv[])
 
      glDeleteBuffers(1, &vbo);
      glDeleteVertexArrays(1, &vao);
+     glDeleteTextures(1,&txt);
     return 0;
 }
