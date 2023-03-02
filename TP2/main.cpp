@@ -917,7 +917,7 @@ int main([[maybe_unused]]int argc, char* argv[])
 
     GLuint u_txt = glGetUniformLocation(program.getGLId(),"uTexture");
     GLuint u_loc = glGetUniformLocation(program.getGLId(),"uModelMatrix");
-    GLuint u_color = glGetUniformLocation(program.getGLId(),"uColor");
+    //GLuint u_color = glGetUniformLocation(program.getGLId(),"uColor");
     //float tournicoti=45;
     
     
@@ -991,8 +991,10 @@ int main([[maybe_unused]]int argc, char* argv[])
         glClearColor(0.5f, 1.f, 0.5f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
         auto end = chrono::steady_clock::now();
-        glm::mat3 R1= rotate(chrono::duration_cast<chrono::seconds>(end - start).count());
-        glm::mat3 R2= rotate(chrono::duration_cast<chrono::seconds>(start-end).count());
+        std::chrono::duration<double> time= end - start;
+        std::chrono::duration<double> minus_time= start-end;
+        glm::mat3 R1= rotate(45*time.count());
+        glm::mat3 R2= rotate(45*minus_time.count());
         glm::mat3 T1= translate(0.5,0.5);
         glm::mat3 T2= translate(0.5,-0.5);
         glm::mat3 T3= translate(-0.5,-0.5);
@@ -1003,20 +1005,20 @@ int main([[maybe_unused]]int argc, char* argv[])
         glBindTexture(GL_TEXTURE_2D,txt);
         //glUniform1f(u_loc,tournicoti);
         glUniform1i(u_txt,0);
-        glUniform3f(u_color,0,1,0);
+        //glUniform3f(u_color,0,1,0);
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T1*S*R1));
         //tournicoti +=.1;    
         glDrawArrays(GL_TRIANGLES,0,3);
 
-        glUniform3f(u_color,1,1,0);
+        //glUniform3f(u_color,1,1,0);
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T2*S*R1));
         glDrawArrays(GL_TRIANGLES,0,3);
 
-        glUniform3f(u_color,0,0,0);
+        //glUniform3f(u_color,0,0,0);
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T3*S*R2));
         glDrawArrays(GL_TRIANGLES,0,3);
 
-        glUniform3f(u_color,1,0,0);
+        //glUniform3f(u_color,1,0,0);
         glUniformMatrix3fv(u_loc ,1,GL_FALSE,glm::value_ptr(R1*T4*S*R2));
         glDrawArrays(GL_TRIANGLES,0,3);
         //glBindVertexArray(0);
