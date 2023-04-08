@@ -1,7 +1,7 @@
 #include "./glimac/TrackballCamera.hpp"
 
 TrackballCamera::TrackballCamera(){
-            m_fDistance=-7.;
+            m_fDistance=-5.;
             m_fAngleX=0.;
             m_fAngleY=0.;
         }

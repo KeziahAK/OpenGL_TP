@@ -480,7 +480,7 @@
 //     return 0;
 // }
 
-// camera TrackBall
+// camera Fly
 int window_width  = 1280;
 int window_height = 720;
 float delta= 0.1f;
